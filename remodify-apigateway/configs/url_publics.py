@@ -1,1 +1,0 @@
-PUBLIC_URLS = ["/docs", "/authentication", "/openapi.json", "/sign-in", "/sign-up"]

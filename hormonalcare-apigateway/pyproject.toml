@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "remodify-apigateway"
+name = "hormonalcare-apigateway"
 version = "0.1.0"
-description = ""
+description = "API Gateway para la aplicación HormonalCare que gestiona la comunicación entre los microservicios"
 authors = ["Estefano-Lostaunau <u202211742@upc.edu.pe>"]
 readme = "README.md"
 
