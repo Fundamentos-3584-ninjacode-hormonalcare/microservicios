@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "remodify-apigateway"
+version = "0.1.0"
+description = ""
+authors = ["Estefano-Lostaunau <u202211742@upc.edu.pe>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.115.2"
+requests = "^2.32.3"
+uvicorn = "^0.32.0"
+pydantic = "^2.9.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+  # Servicio para el API Gateway
+  api-gateway:
+    image: remodify-api-gateway
+    container_name: api-gateway
+    ports:
+      - "8000:8000"  # Mapea el puerto 8000 del contenedor al 8000 de la VM
+    environment:
+      - DB_HOST=junction.proxy.rlwy.net  # Actualiza esta dirección si tu base de datos está en Azure
+      - DB_PORT=18827
+      - DB_USER=root
+      - DB_PASSWORD=tptIIdsajhIcJGRTCGsPaEwWMtfTUvxN
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # Servicio para el microservicio business
+  business:
+    image: remodify-microservice-business
+    container_name: business
+    ports:
+      - "8081:8081"
+    environment:
+      - DB_HOST=junction.proxy.rlwy.net
+      - DB_PORT=18827
+      - DB_USER=root
+      - DB_PASSWORD=tptIIdsajhIcJGRTCGsPaEwWMtfTUvxN
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # Servicio para el microservicio IAM
+  iam:
+    image: remodify-microservice-iam
+    container_name: iam
+    ports:
+      - "8082:8082"
+    environment:
+      - DB_HOST=junction.proxy.rlwy.net
+      - DB_PORT=18827
+      - DB_USER=root
+      - DB_PASSWORD=tptIIdsajhIcJGRTCGsPaEwWMtfTUvxN
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # Servicio para el microservicio project
+  project:
+    image: remodify-microservice-project
+    container_name: project
+    ports:
+      - "8083:8083"
+    environment:
+      - DB_HOST=junction.proxy.rlwy.net
+      - DB_PORT=18827
+      - DB_USER=root
+      - DB_PASSWORD=tptIIdsajhIcJGRTCGsPaEwWMtfTUvxN
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # Servicio para el microservicio reviews
+  reviews:
+    image: remodify-microservice-reviews
+    container_name: reviews
+    ports:
+      - "8084:8084"
+    environment:
+      - DB_HOST=junction.proxy.rlwy.net
+      - DB_PORT=18827
+      - DB_USER=root
+      - DB_PASSWORD=tptIIdsajhIcJGRTCGsPaEwWMtfTUvxN
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # Servicio para el microservicio projectrequest
+  projectrequest:
+    image: remodify-microservice-projectrequest
+    container_name: projectrequest
+    ports:
+      - "8085:8085"
+    environment:
+      - DB_HOST=junction.proxy.rlwy.net
+      - DB_PORT=18827
+      - DB_USER=root
+      - DB_PASSWORD=tptIIdsajhIcJGRTCGsPaEwWMtfTUvxN
+    networks:
+      - app-network
+    restart: unless-stopped
+
+# Definición de la red personalizada
+networks:
+  app-network:
+    driver: bridge
