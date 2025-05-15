@@ -1,0 +1,7 @@
+MICROSERVICE_BUSINESS = "http://13.91.167.59:8081/api/v1/businesses"
+MICROSERVICE_IAM = "http://13.91.167.59:8082/api/v1"
+MICROSERVICE_PROJECT = "http://13.91.167.59:8083/api/v1/projects"
+MICROSERVICE_REVIEWS = "http://13.91.167.59:8084/api/v1/reviews"
+MICROSERVICE_PROJECT_REQUEST = "http://13.91.167.59:8085/api/v1/project-requests"
+
+
