@@ -2,25 +2,21 @@ package com.backend.hormonalcare.communication.application.internal.outboundserv
 
 import org.springframework.stereotype.Service;
 
-import com.backend.hormonalcare.profile.interfaces.acl.ProfileContextFacade;
-
 @Service
 public class CommunicationExternalProfileService {
-    private final ProfileContextFacade profilesContextFacade;
-
-    public CommunicationExternalProfileService(ProfileContextFacade profilesContextFacade) {
-        this.profilesContextFacade = profilesContextFacade;
-    }
-    
+    // Dummy implementation for microservice separation
     public boolean profileExists(Long profileId) {
-        return profilesContextFacade.profileExists(profileId);
+        // TODO: Replace with REST call to IAM microservice
+        return true; // Simula que el perfil existe
     }
-    
+
     public String getProfileName(Long profileId) {
-        return profilesContextFacade.getProfileFullName(profileId);
+        // TODO: Replace with REST call to IAM microservice
+        return "Dummy User"; // Simula un nombre de usuario
     }
-    
+
     public String getProfileImage(Long profileId) {
-        return profilesContextFacade.getProfileImage(profileId);
+        // TODO: Replace with REST call to IAM microservice
+        return "https://dummyimage.com/profile.png"; // Simula una URL de imagen
     }
 }
