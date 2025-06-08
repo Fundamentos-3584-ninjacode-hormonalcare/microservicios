@@ -22,8 +22,8 @@ import com.backend.hormonalcare.medicalRecord.interfaces.rest.transform.DoctorRe
 import com.backend.hormonalcare.medicalRecord.interfaces.rest.transform.DoctorWithProfileResourceFromEntityAssembler;
 import com.backend.hormonalcare.medicalRecord.interfaces.rest.transform.MedicalAppointmentResourceFromEntityAssembler;
 import com.backend.hormonalcare.medicalRecord.interfaces.rest.transform.UpdateDoctorCommandFromResourceAssembler;
-import com.backend.hormonalcare.profile.interfaces.acl.ProfileDetails;
 import com.backend.hormonalcare.medicalRecord.application.internal.outboundservices.acl.ExternalProfileService;
+import com.backend.hormonalcare.medicalRecord.application.internal.outboundservices.acl.SupabaseStorageServiceTypeUser;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,7 +38,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import com.backend.hormonalcare.medicalRecord.application.internal.outboundservices.acl.SupabaseStorageServiceTypeUser;
 
 
 @RestController
@@ -160,7 +159,7 @@ public class DoctorController {
 
         var doctor = doctorOptional.get();
         var profileDetailsOptional = externalProfileService.fetchProfileDetails(doctor.getProfileId());
-        var profileDetails = profileDetailsOptional.orElse(null);
+        ExternalProfileService.ProfileDetails profileDetails = profileDetailsOptional.orElse(null);
 
         var doctorWithProfileResource = DoctorWithProfileResourceFromEntityAssembler.toResourceFromEntity(doctor, profileDetails);
         return ResponseEntity.ok(doctorWithProfileResource);
@@ -180,7 +179,7 @@ public class DoctorController {
         var doctors = doctorQueryService.handle(new GetAllDoctorsQuery());
         var doctorWithProfileResources = doctors.stream().map(doctor -> {
             var profileDetailsOptional = externalProfileService.fetchProfileDetails(doctor.getProfileId());
-            var profileDetails = profileDetailsOptional.orElse(null);
+            ExternalProfileService.ProfileDetails profileDetails = profileDetailsOptional.orElse(null);
             return DoctorWithProfileResourceFromEntityAssembler.toResourceFromEntity(doctor, profileDetails);
         }).toList();
         return ResponseEntity.ok(doctorWithProfileResources);

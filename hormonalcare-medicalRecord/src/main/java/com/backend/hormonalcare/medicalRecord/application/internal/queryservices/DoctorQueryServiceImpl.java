@@ -5,7 +5,6 @@ import com.backend.hormonalcare.medicalRecord.domain.model.queries.*;
 import com.backend.hormonalcare.medicalRecord.domain.services.DoctorQueryService;
 import com.backend.hormonalcare.medicalRecord.infrastructure.persistence.jpa.repositories.DoctorRepository;
 import com.backend.hormonalcare.medicalRecord.application.internal.outboundservices.acl.ExternalProfileService;
-import com.backend.hormonalcare.profile.interfaces.acl.ProfileDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,15 +28,13 @@ public class DoctorQueryServiceImpl implements DoctorQueryService {
         }
 
         Doctor doctor = doctorOptional.get();
-        Optional<ProfileDetails> profileDetailsOptional = externalProfileService.fetchProfileDetails(doctor.getProfileId());
+        Optional<ExternalProfileService.ProfileDetails> profileDetailsOptional = externalProfileService.fetchProfileDetails(doctor.getProfileId());
 
         if (profileDetailsOptional.isEmpty()) {
             return Optional.of(doctor);
         }
 
-        ProfileDetails profileDetails = profileDetailsOptional.get();
-        // Example: Log or use profile details in some way
-        System.out.println("Profile Details: " + profileDetails.getFullName() + ", " + profileDetails.getImage());
+        ExternalProfileService.ProfileDetails profileDetails = profileDetailsOptional.get();
 
         // For now, returning the doctor entity as is.
         return Optional.of(doctor);
@@ -65,8 +62,6 @@ public class DoctorQueryServiceImpl implements DoctorQueryService {
         doctors.forEach(doctor -> {
             var profileDetailsOptional = externalProfileService.fetchProfileDetails(doctor.getProfileId());
             profileDetailsOptional.ifPresent(profileDetails -> {
-                // Opcional: Log o procesamiento adicional
-                System.out.println("Profile Details for Doctor ID " + doctor.getId() + ": " + profileDetails.getFullName());
             });
         });
         return doctors;

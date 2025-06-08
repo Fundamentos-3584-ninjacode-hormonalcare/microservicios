@@ -2,10 +2,10 @@ package com.backend.hormonalcare.medicalRecord.interfaces.rest.transform;
 
 import com.backend.hormonalcare.medicalRecord.domain.model.aggregates.Doctor;
 import com.backend.hormonalcare.medicalRecord.interfaces.rest.resources.DoctorWithProfileResource;
-import com.backend.hormonalcare.profile.interfaces.acl.ProfileDetails;
+import com.backend.hormonalcare.medicalRecord.application.internal.outboundservices.acl.ExternalProfileService;
 
 public class DoctorWithProfileResourceFromEntityAssembler {
-    public static DoctorWithProfileResource toResourceFromEntity(Doctor entity, ProfileDetails profileDetails) {
+    public static DoctorWithProfileResource toResourceFromEntity(Doctor entity, ExternalProfileService.ProfileDetails profileDetails) {
         return new DoctorWithProfileResource(
             entity.getId(),
             profileDetails != null ? profileDetails.getFullName() : null,
