@@ -4,3 +4,8 @@ from configs.settings import (
     MICROSERVICE_NOTIFICATION,
     MICROSERVICE_COMMUNICATION
 )
+
+MICROSERVICE_IAM = "http://localhost:8081"
+MICROSERVICE_MEDICAL_RECORD = "http://localhost:8082"
+MICROSERVICE_NOTIFICATION = "http://localhost:8083"
+MICROSERVICE_COMMUNICATION = "http://localhost:8084"

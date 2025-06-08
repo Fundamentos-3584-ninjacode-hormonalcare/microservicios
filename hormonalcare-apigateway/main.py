@@ -4,8 +4,6 @@ from starlette.responses import JSONResponse
 from configs.url_publics import PUBLIC_URLS
 from configs.url_services import MICROSERVICE_IAM
 from services.IAM.IAM_service import iam_router
-from services.IAM.users_services import users_router
-from services.IAM.profiles_services import profiles_router
 from services.MedicalRecord.medicalrecord_service import medical_record_router
 from services.Notification.notification_service import notification_router
 from services.Communication.communication_service import communication_router
@@ -66,8 +64,6 @@ app.add_middleware(
 
 
 app.include_router(iam_router, tags=["IAM Microservice"])
-app.include_router(users_router, tags=["IAM Microservice"])
-app.include_router(profiles_router, tags=["IAM Microservice"])
 app.include_router(medical_record_router, tags=["MedicalRecord Microservice"])
 app.include_router(notification_router, tags=["Notification Microservice"])
 app.include_router(communication_router, tags=["Communication Microservice"])
