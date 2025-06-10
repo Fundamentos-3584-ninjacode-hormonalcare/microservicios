@@ -6,7 +6,7 @@
 ``` bash
 -> This service runs on port 8080
 ```
-### Business
+### Communication
 ``` bash
 -> This service runs on port 8081
 ```
@@ -14,17 +14,13 @@
 ``` bash
 -> This service runs on port 8082
 ```
-### Project
+### Medical Record
 ``` bash
 -> This service runs on port 8083
 ```
-### Reviews
+### Notifications
 ``` bash
 -> This service runs on port 8084
-```
-### Project Request
-``` bash
--> This service runs on port 8085
 ```
 
 
