@@ -3,12 +3,12 @@ version: '3.8'
 services:
   # Servicio para el API Gateway
   api-gateway:
-    image: remodify-api-gateway
+    image: hormonal-care-api-gateway
     container_name: api-gateway
     ports:
-      - "8000:8000"  # Mapea el puerto 8000 del contenedor al 8000 de la VM
+      - "8080:8080"  # Mapea el puerto 8000 del contenedor al 8000 de la VM
     environment:
-      - DB_HOST=junction.proxy.rlwy.net  # Actualiza esta dirección si tu base de datos está en Azure
+      - DB_HOST=junction.proxy.rlwy.net 
       - DB_PORT=18827
       - DB_USER=root
       - DB_PASSWORD=tptIIdsajhIcJGRTCGsPaEwWMtfTUvxN
@@ -16,10 +16,10 @@ services:
       - app-network
     restart: unless-stopped
 
-  # Servicio para el microservicio business
-  business:
-    image: remodify-microservice-business
-    container_name: business
+  # Servicio para el microservicio communication
+  communication:
+    image: hormonal-care-microservice-communication
+    container_name: communication
     ports:
       - "8081:8081"
     environment:
@@ -33,7 +33,7 @@ services:
 
   # Servicio para el microservicio IAM
   iam:
-    image: remodify-microservice-iam
+    image: hormonal-care-microservice-iam
     container_name: iam
     ports:
       - "8082:8082"
@@ -46,10 +46,10 @@ services:
       - app-network
     restart: unless-stopped
 
-  # Servicio para el microservicio project
-  project:
-    image: remodify-microservice-project
-    container_name: project
+  # Servicio para el microservicio medicalRecord
+  medicalRecord:
+    image: hormonal-care-microservice-medicalRecord
+    container_name: medicalRecord
     ports:
       - "8083:8083"
     environment:
@@ -61,27 +61,12 @@ services:
       - app-network
     restart: unless-stopped
 
-  # Servicio para el microservicio reviews
-  reviews:
-    image: remodify-microservice-reviews
-    container_name: reviews
+  # Servicio para el microservicio notifications
+  notifications:
+    image: hormonal-care-microservice-notifications
+    container_name: notifications
     ports:
       - "8084:8084"
-    environment:
-      - DB_HOST=junction.proxy.rlwy.net
-      - DB_PORT=18827
-      - DB_USER=root
-      - DB_PASSWORD=tptIIdsajhIcJGRTCGsPaEwWMtfTUvxN
-    networks:
-      - app-network
-    restart: unless-stopped
-
-  # Servicio para el microservicio projectrequest
-  projectrequest:
-    image: remodify-microservice-projectrequest
-    container_name: projectrequest
-    ports:
-      - "8085:8085"
     environment:
       - DB_HOST=junction.proxy.rlwy.net
       - DB_PORT=18827
