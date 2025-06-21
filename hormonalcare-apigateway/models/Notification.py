@@ -8,6 +8,7 @@ class Notification(BaseModel):
     sender_id: Optional[str] = None
     title: str
     message: str
+    state: str
     type: str  # e.g. "appointment", "reminder", "message"
     read: bool = False
     created_at: Optional[str] = None
