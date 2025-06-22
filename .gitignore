@@ -3,7 +3,7 @@
 */.idea/*
 */.vscode/*
 */.vs/*
-*/.DS_Store
+**/.DS_Store
 */.DS_Store
 */.env
 */.env.local
@@ -12,6 +12,7 @@
 */.env.production.local
 
 */venv
+**/venv
 
 */.cache
 */.settings
@@ -40,7 +41,7 @@ target/
 .sts4-cache
 
 ### IntelliJ IDEA ###
-.idea
+*.idea
 *.iws
 *.iml
 *.ipr
