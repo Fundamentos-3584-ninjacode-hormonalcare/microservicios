@@ -32,8 +32,13 @@ async def sign_up(request: Request, signUpRequest: SignUpRequest):
 @iam_router.get("/roles")
 async def get_all_roles(request: Request):
     url = f"{MICROSERVICE_IAM}/roles"
-    response = requests.get(url, headers=request.headers)
+    # Extrae solo el header Authorization
+    headers = {}
+    if "authorization" in request.headers:
+        headers["Authorization"] = request.headers["authorization"]
+    response = requests.get(url, headers=headers)
     try:
+        response.raise_for_status()
         return response.json()
     except Exception:
-        raise HTTPException(status_code=500, detail="Invalid response from IAM service")
+        raise HTTPException(status_code=500, detail=f"IAM error: {response.text}")

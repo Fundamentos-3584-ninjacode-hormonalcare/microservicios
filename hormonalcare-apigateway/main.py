@@ -16,36 +16,20 @@ app = FastAPI(
 )
 
 
-async def is_token_valid(token: str) -> bool:
-    try:
-        response = requests.post(
-            f"{MICROSERVICE_IAM}/authentication/validate-token", json={"token": token})
-        # Esto lanzará una excepción para códigos de estado 4xx/5xx
-        response.raise_for_status()
-        if response.json().get("valid") == True:
-            return True
-        return False
-    except requests.RequestException as e:
-        raise HTTPException(
-            status_code=500, detail=f"Error validating token: {e}")
-
-
 @app.middleware("http")
 async def check_token(request: Request, call_next):
     try:
         path = request.url.path
-        print(f"[API Gateway] Path recibido: {path}")  # Log para depuración
-        print(f"[API Gateway] PUBLIC_URLS: {PUBLIC_URLS}")  # Log para depuración
-        # Permitir acceso si la ruta inicia con algún patrón público
+        print(f"[API Gateway] Path recibido: {path}") 
+        print(f"[API Gateway] PUBLIC_URLS: {PUBLIC_URLS}")  
         if any(path.startswith(public) for public in PUBLIC_URLS):
             response = await call_next(request)
             return response
 
         token = request.headers.get("Authorization")
         if token and token.startswith("Bearer "):
-            token = token.split("Bearer ")[1]
-            if not await is_token_valid(token):
-                raise HTTPException(status_code=401, detail="Invalid token")
+            # Solo verifica presencia, no validez
+            pass
         else:
             raise HTTPException(
                 status_code=401, detail="Token is missing or invalid")
@@ -60,10 +44,10 @@ async def check_token(request: Request, call_next):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Permitir todos los orígenes (para depuración)
+    allow_origins=["*"],  
     allow_credentials=True,
-    allow_methods=["*"],  # Permite todos los métodos
-    allow_headers=["*"],  # Permite todos los encabezados
+    allow_methods=["*"],  
+    allow_headers=["*"],  
 )
 
 
