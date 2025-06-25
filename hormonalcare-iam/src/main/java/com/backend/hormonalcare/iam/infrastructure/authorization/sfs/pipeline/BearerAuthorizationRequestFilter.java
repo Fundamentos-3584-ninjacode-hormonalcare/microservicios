@@ -49,4 +49,15 @@ public class BearerAuthorizationRequestFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
     }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        LOGGER.info("[shouldNotFilter] Path received: {}", path);
+        return path.contains("/api/v1/authentication/sign-in")
+            || path.contains("/api/v1/authentication/sign-up")
+            || path.contains("/v3/api-docs")
+            || path.contains("/swagger-ui")
+            || path.contains("/swagger-ui.html");
+    }
 }

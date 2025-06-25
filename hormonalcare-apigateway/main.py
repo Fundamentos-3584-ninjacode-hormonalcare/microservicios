@@ -33,7 +33,11 @@ async def is_token_valid(token: str) -> bool:
 @app.middleware("http")
 async def check_token(request: Request, call_next):
     try:
-        if request.url.path in PUBLIC_URLS:
+        path = request.url.path
+        print(f"[API Gateway] Path recibido: {path}")  # Log para depuración
+        print(f"[API Gateway] PUBLIC_URLS: {PUBLIC_URLS}")  # Log para depuración
+        # Permitir acceso si la ruta inicia con algún patrón público
+        if any(path.startswith(public) for public in PUBLIC_URLS):
             response = await call_next(request)
             return response
 

@@ -1,1 +1,6 @@
-PUBLIC_URLS = ["/docs", "/authentication", "/openapi.json", "/sign-in", "/sign-up"]
+PUBLIC_URLS = [
+    "/sign-in",
+    "/sign-up",
+    "/docs",
+    "/openapi.json"
+]
