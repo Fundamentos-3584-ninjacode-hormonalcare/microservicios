@@ -1,105 +1,180 @@
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, Request, HTTPException, Path
+from fastapi.responses import JSONResponse
 import requests
 from configs.url_services import MICROSERVICE_COMMUNICATION
 
 communication_router = APIRouter()
 
-@communication_router.get("/communications/messages/{messageId}")
-async def get_communication_by_id(request: Request, messageId: str):
-    """
-    Get a specific communication by ID
-    """
-    url = f"{MICROSERVICE_COMMUNICATION}/messages/{messageId}"
-    response = requests.get(url, headers=request.headers)
-    if response.status_code != 200:
-        raise HTTPException(status_code=response.status_code,
-                            detail=response.json())
-    return response.json()
+# =============== MESSAGES ===============
 
-@communication_router.get("/communications/messages/conversation/{conversationId}")
-async def get_messages_by_conversation_id(request: Request, conversationId: str):
-    """
-    Get a specific communication by conversation ID
-    """
-    url = f"{MICROSERVICE_COMMUNICATION}/messages/conversation/{conversationId}"
-    response = requests.get(url, headers=request.headers)
-    if response.status_code != 200:
-        raise HTTPException(status_code=response.status_code,
-                            detail=response.json())
-    return response.json()
 
-@communication_router.post("/communications/messages")
+@communication_router.get("/messages")
+async def get_all_messages(request: Request):
+    """
+    Get all messages
+    """
+    url = f"{MICROSERVICE_COMMUNICATION}/communication/messages"
+    headers = {}
+    if "authorization" in request.headers:
+        headers["Authorization"] = request.headers["authorization"]
+    response = requests.get(url, headers=headers)
+    try:
+        response.raise_for_status()
+        return response.json()
+    except Exception:
+        return JSONResponse(status_code=500, content={"detail": f"Communication error: {response.text}"})
+
+
+@communication_router.get("/messages/{messageId}")
+async def get_message_by_id(request: Request, messageId: str = Path(...)):
+    """
+    Get a specific message by ID
+    """
+    url = f"{MICROSERVICE_COMMUNICATION}/communication/messages/{messageId}"
+    headers = {}
+    if "authorization" in request.headers:
+        headers["Authorization"] = request.headers["authorization"]
+    response = requests.get(url, headers=headers)
+    try:
+        response.raise_for_status()
+        return response.json()
+    except Exception:
+        return JSONResponse(status_code=500, content={"detail": f"Communication error: {response.text}"})
+
+
+@communication_router.get("/messages/conversation/{conversationId}")
+async def get_messages_by_conversation_id(request: Request, conversationId: str = Path(...)):
+    """
+    Get messages by conversation ID
+    """
+    url = f"{MICROSERVICE_COMMUNICATION}/communication/messages/conversation/{conversationId}"
+    headers = {}
+    if "authorization" in request.headers:
+        headers["Authorization"] = request.headers["authorization"]
+    response = requests.get(url, headers=headers)
+    try:
+        response.raise_for_status()
+        return response.json()
+    except Exception:
+        return JSONResponse(status_code=500, content={"detail": f"Communication error: {response.text}"})
+
+
+@communication_router.post("/messages")
 async def send_message(request: Request):
     """
-    Create a new communication
+    Send a new message
     """
-    url = f"{MICROSERVICE_COMMUNICATION}/messages"
-    response = requests.post(url, headers=request.headers, json=await request.json())
-    if response.status_code != 201:
-        raise HTTPException(status_code=response.status_code,
-                            detail=response.json())
-    return response.json()
-
-@communication_router.put("/communications/messages/{messageId}/status")
-async def update_message_status(request: Request, messageId: str):
-    """
-    Update the status of an existing communication
-    """
-    url = f"{MICROSERVICE_COMMUNICATION}/messages/{messageId}/status"
-    response = requests.put(url, headers=request.headers, json=await request.json())
-    if response.status_code != 200:
-        raise HTTPException(status_code=response.status_code,
-                            detail=response.json())
-    return response.json()
-
-@communication_router.delete("/communications/messages/{messageId}")
-async def delete_message(request: Request, messageId: str):
-    """
-    Delete a communication
-    """
-    url = f"{MICROSERVICE_COMMUNICATION}/messages/{messageId}"
-    response = requests.delete(url, headers=request.headers)
-    if response.status_code != 204:
-        raise HTTPException(status_code=response.status_code,
-                            detail=response.json())
-    return {"message": "Communication deleted successfully"}
+    url = f"{MICROSERVICE_COMMUNICATION}/communication/messages"
+    headers = {}
+    if "authorization" in request.headers:
+        headers["Authorization"] = request.headers["authorization"]
+    try:
+        response = requests.post(url, headers=headers, json=await request.json())
+        response.raise_for_status()
+        return response.json()
+    except Exception:
+        return JSONResponse(status_code=500, content={"detail": f"Communication error: {response.text}"})
 
 
-
-
-
-@communication_router.get("/communications/conversations/{conversationId}")
-async def get_conversation_by_id(request: Request, conversationId: str):
+@communication_router.put("/messages/{messageId}/status")
+async def update_message_status(request: Request, messageId: str = Path(...)):
     """
-    Get a specific communication by ID
+    Update message status
     """
-    url = f"{MICROSERVICE_COMMUNICATION}/conversations/{conversationId}"
-    response = requests.get(url, headers=request.headers)
-    if response.status_code != 200:
-        raise HTTPException(status_code=response.status_code,
-                            detail=response.json())
-    return response.json()
+    url = f"{MICROSERVICE_COMMUNICATION}/communication/messages/{messageId}/status"
+    headers = {}
+    if "authorization" in request.headers:
+        headers["Authorization"] = request.headers["authorization"]
+    try:
+        response = requests.put(url, headers=headers, json=await request.json())
+        response.raise_for_status()
+        return response.json()
+    except Exception:
+        return JSONResponse(status_code=500, content={"detail": f"Communication error: {response.text}"})
 
-@communication_router.get("/communications/conversations/user/{profileId}")
-async def get_conversation_by_profile_id(request: Request, profileId: str):
-    """
-    Get a specific communication by ID
-    """
-    url = f"{MICROSERVICE_COMMUNICATION}/conversations/user/{profileId}"
-    response = requests.get(url, headers=request.headers)
-    if response.status_code != 200:
-        raise HTTPException(status_code=response.status_code,
-                            detail=response.json())
-    return response.json()
 
-@communication_router.post("/communications/conversations")
+@communication_router.delete("/messages/{messageId}")
+async def delete_message(request: Request, messageId: str = Path(...)):
+    """
+    Delete a message
+    """
+    url = f"{MICROSERVICE_COMMUNICATION}/communication/messages/{messageId}"
+    headers = {}
+    if "authorization" in request.headers:
+        headers["Authorization"] = request.headers["authorization"]
+    try:
+        response = requests.delete(url, headers=headers)
+        response.raise_for_status()
+        return {"message": "Message deleted successfully"}
+    except Exception:
+        return JSONResponse(status_code=500, content={"detail": f"Communication error: {response.text}"})
+
+# =============== CONVERSATIONS ===============
+
+
+@communication_router.get("/conversations")
+async def get_all_conversations(request: Request):
+    """
+    Get all conversations
+    """
+    url = f"{MICROSERVICE_COMMUNICATION}/communication/conversations"
+    headers = {}
+    if "authorization" in request.headers:
+        headers["Authorization"] = request.headers["authorization"]
+    response = requests.get(url, headers=headers)
+    try:
+        response.raise_for_status()
+        return response.json()
+    except Exception:
+        return JSONResponse(status_code=500, content={"detail": f"Communication error: {response.text}"})
+
+
+@communication_router.get("/conversations/{conversationId}")
+async def get_conversation_by_id(request: Request, conversationId: str = Path(...)):
+    """
+    Get a specific conversation by ID
+    """
+    url = f"{MICROSERVICE_COMMUNICATION}/communication/conversations/{conversationId}"
+    headers = {}
+    if "authorization" in request.headers:
+        headers["Authorization"] = request.headers["authorization"]
+    response = requests.get(url, headers=headers)
+    try:
+        response.raise_for_status()
+        return response.json()
+    except Exception:
+        return JSONResponse(status_code=500, content={"detail": f"Communication error: {response.text}"})
+
+
+@communication_router.get("/conversations/user/{profileId}")
+async def get_conversations_by_profile_id(request: Request, profileId: int = Path(...)):
+    """
+    Get conversations by profile ID
+    """
+    url = f"{MICROSERVICE_COMMUNICATION}/communication/conversations/user/{profileId}"
+    headers = {}
+    if "authorization" in request.headers:
+        headers["Authorization"] = request.headers["authorization"]
+    response = requests.get(url, headers=headers)
+    try:
+        response.raise_for_status()
+        return response.json()
+    except Exception:
+        return JSONResponse(status_code=500, content={"detail": f"Communication error: {response.text}"})
+
+
+@communication_router.post("/conversations")
 async def create_conversation(request: Request):
     """
-    Create a new communication
+    Create a new conversation
     """
-    url = f"{MICROSERVICE_COMMUNICATION}/conversations"
-    response = requests.post(url, headers=request.headers, json=await request.json())
-    if response.status_code != 201:
-        raise HTTPException(status_code=response.status_code,
-                            detail=response.json())
-    return response.json()
+    url = f"{MICROSERVICE_COMMUNICATION}/communication/conversations"
+    headers = {}
+    if "authorization" in request.headers:
+        headers["Authorization"] = request.headers["authorization"]
+    try:
+        response = requests.post(url, headers=headers, json=await request.json())
+        response.raise_for_status()
+        return response.json()
+    except Exception:
+        return JSONResponse(status_code=500, content={"detail": f"Communication error: {response.text}"})

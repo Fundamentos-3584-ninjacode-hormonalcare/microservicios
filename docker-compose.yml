@@ -1,82 +1,149 @@
-version: '3.8'
-
 services:
-  # Servicio para el API Gateway
-  api-gateway:
-    image: hormonal-care-api-gateway
-    container_name: api-gateway
-    ports:
-      - "8080:8080"  # Mapea el puerto 8000 del contenedor al 8000 de la VM
+  # Base de datos MySQL para IAM y Medical Record
+  mysql-db:
+    image: mysql:8.0
+    container_name: hormonal-care-mysql
     environment:
-      - DB_HOST=junction.proxy.rlwy.net 
-      - DB_PORT=18827
-      - DB_USER=root
-      - DB_PASSWORD=tptIIdsajhIcJGRTCGsPaEwWMtfTUvxN
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: hormonal_care
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
     networks:
       - app-network
-    restart: unless-stopped
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 10
 
-  # Servicio para el microservicio communication
-  communication:
-    image: hormonal-care-microservice-communication
-    container_name: communication
+  # Base de datos MongoDB para Communication
+  mongodb:
+    image: mongo:6.0
+    container_name: hormonal-care-mongodb
     ports:
-      - "8081:8081"
-    environment:
-      - DB_HOST=junction.proxy.rlwy.net
-      - DB_PORT=18827
-      - DB_USER=root
-      - DB_PASSWORD=tptIIdsajhIcJGRTCGsPaEwWMtfTUvxN
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
     networks:
       - app-network
-    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_DATABASE=hormonal_care_communication
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
 
-  # Servicio para el microservicio IAM
+  # Servicio IAM (Puerto 8081)
   iam:
     image: hormonal-care-microservice-iam
     container_name: iam
+    build:
+      context: ./hormonalcare-iam
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/hormonal_care?useSSL=false&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+    networks:
+      - app-network
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Servicio Medical Record (Puerto 8082)
+  medicalrecord:
+    image: hormonal-care-microservice-medicalrecord
+    container_name: medicalrecord
+    build:
+      context: ./hormonalcare-medicalRecord
+      dockerfile: Dockerfile
     ports:
       - "8082:8082"
     environment:
-      - DB_HOST=junction.proxy.rlwy.net
-      - DB_PORT=18827
-      - DB_USER=root
-      - DB_PASSWORD=tptIIdsajhIcJGRTCGsPaEwWMtfTUvxN
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/hormonal_care?useSSL=false&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
     networks:
       - app-network
+    depends_on:
+      mysql-db:
+        condition: service_healthy
     restart: unless-stopped
 
-  # Servicio para el microservicio medicalRecord
-  medicalRecord:
-    image: hormonal-care-microservice-medicalRecord
-    container_name: medicalRecord
-    ports:
-      - "8083:8083"
-    environment:
-      - DB_HOST=junction.proxy.rlwy.net
-      - DB_PORT=18827
-      - DB_USER=root
-      - DB_PASSWORD=tptIIdsajhIcJGRTCGsPaEwWMtfTUvxN
-    networks:
-      - app-network
-    restart: unless-stopped
-
-  # Servicio para el microservicio notifications
+  # Servicio Notification (Puerto 8083)
   notifications:
     image: hormonal-care-microservice-notifications
     container_name: notifications
+    build:
+      context: ./hormonalcare-notification
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/hormonal_care?useSSL=false&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=root
+    networks:
+      - app-network
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Servicio Communication (Puerto 8084)
+  communication:
+    image: hormonal-care-microservice-communication
+    container_name: communication
+    build:
+      context: ./hormonalcare-communication
+      dockerfile: Dockerfile
     ports:
       - "8084:8084"
     environment:
-      - DB_HOST=junction.proxy.rlwy.net
-      - DB_PORT=18827
-      - DB_USER=root
-      - DB_PASSWORD=tptIIdsajhIcJGRTCGsPaEwWMtfTUvxN
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/hormonal_care_communication
     networks:
       - app-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
     restart: unless-stopped
 
-# Definición de la red personalizada
+  # Servicio API Gateway (Puerto 8080)
+  api-gateway:
+    image: hormonal-care-api-gateway
+    container_name: api-gateway
+    build:
+      context: ./hormonalcare-apigateway
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - MICROSERVICE_IAM_URL=http://iam:8081/api/v1
+      - MICROSERVICE_MEDICAL_RECORD_URL=http://medicalrecord:8082/api/v1
+      - MICROSERVICE_NOTIFICATION_URL=http://notifications:8083/api/v1
+      - MICROSERVICE_COMMUNICATION_URL=http://communication:8084/api/v1
+    networks:
+      - app-network
+    depends_on:
+      - iam
+      - medicalrecord
+      - notifications
+      - communication
+    restart: unless-stopped
+
+# Volúmenes para persistencia de datos
+volumes:
+  mysql-data:
+  mongodb-data:
+
+# Red personalizada
 networks:
   app-network:
     driver: bridge

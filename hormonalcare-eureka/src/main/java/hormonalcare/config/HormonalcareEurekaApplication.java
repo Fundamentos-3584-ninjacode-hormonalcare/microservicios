@@ -1,4 +1,4 @@
-package com.hormonalcare.eureka;
+package hormonalcare.config;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

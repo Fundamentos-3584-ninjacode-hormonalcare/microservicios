@@ -14,8 +14,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copiamos todo el código fuente del API Gateway
 COPY . /app/
 
-# Exponemos el puerto 8000
-EXPOSE 8000
+# Exponemos el puerto 8080
+EXPOSE 8080
 
 # Comando para iniciar FastAPI con Uvicorn
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
