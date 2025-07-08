@@ -5,6 +5,7 @@ import com.backend.hormonalcare.medicalRecord.domain.model.queries.*;
 import com.backend.hormonalcare.medicalRecord.domain.services.DoctorQueryService;
 import com.backend.hormonalcare.medicalRecord.infrastructure.persistence.jpa.repositories.DoctorRepository;
 import com.backend.hormonalcare.medicalRecord.application.internal.outboundservices.acl.ExternalProfileService;
+import com.backend.hormonalcare.medicalRecord.domain.model.valueobjects.ProfileId;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,22 +23,7 @@ public class DoctorQueryServiceImpl implements DoctorQueryService {
 
     @Override
     public Optional<Doctor> handle(GetDoctorByIdQuery query) {
-        Optional<Doctor> doctorOptional = doctorRepository.findById(query.id());
-        if (doctorOptional.isEmpty()) {
-            return Optional.empty();
-        }
-
-        Doctor doctor = doctorOptional.get();
-        Optional<ExternalProfileService.ProfileDetails> profileDetailsOptional = externalProfileService.fetchProfileDetails(doctor.getProfileId());
-
-        if (profileDetailsOptional.isEmpty()) {
-            return Optional.of(doctor);
-        }
-
-        ExternalProfileService.ProfileDetails profileDetails = profileDetailsOptional.get();
-
-        // For now, returning the doctor entity as is.
-        return Optional.of(doctor);
+        return doctorRepository.findById(query.id());
     }
 
     @Override
@@ -67,4 +53,16 @@ public class DoctorQueryServiceImpl implements DoctorQueryService {
         return doctors;
     }
 
+    @Override
+    public Optional<Doctor> handle(GetDoctorByUserId query) {
+        Long userId = query.userId();
+        return findDoctorByUserId(userId);
+    }
+
+    @Override
+    public Optional<Doctor> findDoctorByUserId(Long userId) {
+        Optional<Long> profileIdOpt = externalProfileService.fetchProfileIdByUserId(userId);
+        if (profileIdOpt.isEmpty()) return Optional.empty();
+        return doctorRepository.findByProfileId(new ProfileId(profileIdOpt.get()));
+    }
 }

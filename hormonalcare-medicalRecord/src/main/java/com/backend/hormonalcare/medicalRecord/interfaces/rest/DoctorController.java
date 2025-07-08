@@ -1,9 +1,7 @@
 package com.backend.hormonalcare.medicalRecord.interfaces.rest;
 
-import com.backend.hormonalcare.medicalRecord.domain.model.commands.UpdateDoctorCommand;
 import com.backend.hormonalcare.medicalRecord.domain.model.commands.CreateDoctorCommand;
 import com.backend.hormonalcare.medicalRecord.domain.model.queries.GetAllDoctorsQuery;
-import com.backend.hormonalcare.medicalRecord.domain.model.queries.GetAllMedicalAppointmentQuery;
 import com.backend.hormonalcare.medicalRecord.domain.model.queries.GetDoctorByDoctorRecordIdQuery;
 import com.backend.hormonalcare.medicalRecord.domain.model.queries.GetDoctorByIdQuery;
 import com.backend.hormonalcare.medicalRecord.domain.model.queries.GetDoctorByProfileIdQuery;
@@ -12,22 +10,16 @@ import com.backend.hormonalcare.medicalRecord.domain.model.valueobjects.DoctorRe
 import com.backend.hormonalcare.medicalRecord.domain.model.valueobjects.ProfileId;
 import com.backend.hormonalcare.medicalRecord.domain.services.DoctorCommandService;
 import com.backend.hormonalcare.medicalRecord.domain.services.DoctorQueryService;
-import com.backend.hormonalcare.medicalRecord.interfaces.rest.resources.CreateDoctorResource;
 import com.backend.hormonalcare.medicalRecord.interfaces.rest.resources.DoctorResource;
 import com.backend.hormonalcare.medicalRecord.interfaces.rest.resources.DoctorWithProfileResource;
-import com.backend.hormonalcare.medicalRecord.interfaces.rest.resources.MedicalAppointmentResource;
 import com.backend.hormonalcare.medicalRecord.interfaces.rest.resources.UpdateDoctorResource;
-import com.backend.hormonalcare.medicalRecord.interfaces.rest.transform.CreateDoctorCommandFromResourceAssembler;
 import com.backend.hormonalcare.medicalRecord.interfaces.rest.transform.DoctorResourceFromEntityAssembler;
 import com.backend.hormonalcare.medicalRecord.interfaces.rest.transform.DoctorWithProfileResourceFromEntityAssembler;
-import com.backend.hormonalcare.medicalRecord.interfaces.rest.transform.MedicalAppointmentResourceFromEntityAssembler;
 import com.backend.hormonalcare.medicalRecord.interfaces.rest.transform.UpdateDoctorCommandFromResourceAssembler;
 import com.backend.hormonalcare.medicalRecord.application.internal.outboundservices.acl.ExternalProfileService;
 import com.backend.hormonalcare.medicalRecord.application.internal.outboundservices.acl.SupabaseStorageServiceTypeUser;
 
 import java.util.List;
-import java.util.stream.Collectors;
-import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -41,7 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 @RestController
-@RequestMapping(value = "/api/v1/doctor/doctor", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1/doctor", produces = MediaType.APPLICATION_JSON_VALUE)
 public class DoctorController {
     private final DoctorCommandService doctorCommandService;
     private final DoctorQueryService doctorQueryService;
@@ -72,7 +64,6 @@ public class DoctorController {
                 image = supabaseStorageService.uploadFile(file.getBytes(), file.getOriginalFilename());
             }
 
-            // Convertir el string de fecha a un objeto Date
             Date birthdayDate;
             try {
                 birthdayDate = new SimpleDateFormat("yyyy-MM-dd").parse(birthday);
@@ -80,13 +71,12 @@ public class DoctorController {
                 return ResponseEntity.badRequest().build();
             }
 
-            // Crear el comando con la URL de la imagen
             var createDoctorCommand = new CreateDoctorCommand(
                     firstName,
                     lastName,
                     gender,
                     phoneNumber,
-                    image,  // URL de la imagen subida
+                    image,
                     birthdayDate,
                     userId,
                     professionalIdentificationNumber,
@@ -114,7 +104,7 @@ public class DoctorController {
 
             return new ResponseEntity<>(doctorWithProfileResource, HttpStatus.CREATED);
         } catch (Exception e) {
-            e.printStackTrace(); // O usa un logger
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
@@ -165,14 +155,6 @@ public class DoctorController {
         return ResponseEntity.ok(doctorWithProfileResource);
     }
 
-    @PutMapping("/{doctorId}")
-    public ResponseEntity<DoctorResource> updateDoctor(@PathVariable Long doctorId, @RequestBody UpdateDoctorResource updateDoctorResource){
-        var updateDoctorCommand = UpdateDoctorCommandFromResourceAssembler.toCommandFromResource(doctorId, updateDoctorResource);
-        var updatedDoctor = doctorCommandService.handle(updateDoctorCommand);
-        if(updatedDoctor.isEmpty()) return ResponseEntity.notFound().build();
-        var doctorResource = DoctorResourceFromEntityAssembler.toResourceFromEntity(updatedDoctor.get());
-        return ResponseEntity.ok(doctorResource);
-    }
 
     @GetMapping
     public ResponseEntity<List<DoctorWithProfileResource>> getAllDoctors() {
@@ -183,5 +165,28 @@ public class DoctorController {
             return DoctorWithProfileResourceFromEntityAssembler.toResourceFromEntity(doctor, profileDetails);
         }).toList();
         return ResponseEntity.ok(doctorWithProfileResources);
+    }
+
+    @GetMapping("/by-user/{userId}")
+    public ResponseEntity<DoctorWithProfileResource> getDoctorByUserId(@PathVariable Long userId) {
+        var doctorOptional = doctorQueryService.findDoctorByUserId(userId);
+        if (doctorOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        var doctor = doctorOptional.get();
+        var profileDetailsOptional = externalProfileService.fetchProfileDetails(doctor.getProfileId());
+        var profileDetails = profileDetailsOptional.orElse(null);
+
+        var doctorWithProfileResource = DoctorWithProfileResourceFromEntityAssembler.toResourceFromEntity(doctor, profileDetails);
+        return ResponseEntity.ok(doctorWithProfileResource);
+    }
+
+    @PutMapping("/{doctorId}")
+    public ResponseEntity<DoctorResource> updateDoctor(@PathVariable Long doctorId, @RequestBody UpdateDoctorResource updateDoctorResource){
+        var updateDoctorCommand = UpdateDoctorCommandFromResourceAssembler.toCommandFromResource(doctorId, updateDoctorResource);
+        var updatedDoctor = doctorCommandService.handle(updateDoctorCommand);
+        if(updatedDoctor.isEmpty()) return ResponseEntity.notFound().build();
+        var doctorResource = DoctorResourceFromEntityAssembler.toResourceFromEntity(updatedDoctor.get());
+        return ResponseEntity.ok(doctorResource);
     }
 }

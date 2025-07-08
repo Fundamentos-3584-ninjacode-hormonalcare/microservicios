@@ -11,4 +11,10 @@ public interface PatientQueryService {
     Optional<Patient> handle(GetPatientByPatientRecordIdQuery query);
     Optional<Long> handle(GetProfileIdByPatientIdQuery query);
     List<Patient> handle(GetAllPatientsByDoctorIdQuery query);
+    List<Patient> handle(GetAllPatientsQuery query);
+
+    List<Patient> handle(GetPatientsByNameQuery query);
+    Optional<Patient> findPatientByUserId(Long userId);
+
+
 }

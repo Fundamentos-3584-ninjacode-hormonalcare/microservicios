@@ -13,5 +13,6 @@ public interface DoctorQueryService {
     Optional<Long> handle(GetProfileIdByDoctorIdQuery query);
     List<Doctor> handle(GetAllDoctorsQuery query);
 
-
+    Optional<Doctor> handle(GetDoctorByUserId query);
+    Optional<Doctor> findDoctorByUserId(Long userId);
 }
